@@ -1,13 +1,13 @@
+# MikroTechAcademy Bot - Final Version (Fixed for Deployment)
+# File: bot.py
+
 import logging
 import os
 import sys
 import asyncio
 from math import ceil
 
-# --- New Addition for Local Testing ---
-# This library loads environment variables from a .env file
 from dotenv import load_dotenv
-
 from flask import Flask, request
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardRemove
 from telegram.ext import (
@@ -20,24 +20,22 @@ from telegram.ext import (
     ConversationHandler,
 )
 
-# --- New Addition for Local Testing ---
-# Load variables from .env file when running locally.
-# On Render, these will be set in the dashboard, so this does nothing.
+# Load variables from .env file when running locally
 load_dotenv()
 
 # --- Basic Setup ---
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-# --- Configuration (Loaded from Environment Variables) ---
+# --- Configuration ---
 BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 ADMIN_CHAT_ID = os.environ.get("ADMIN_CLIENT_ID")
-WEBHOOK_URL = os.environ.get("WEBHOOK_URL") # This will be None when running locally
+WEBHOOK_URL = os.environ.get("WEBHOOK_URL")
 
 # --- Conversation States ---
 SELECTING_COUNTRY, SELECTING_SERVICE, SELECTING_TUTOR_OPTION, AWAITING_ASSIGNMENT, AWAITING_NAME, AWAITING_PHONE, AWAITING_SUBJECT = range(7)
 
-# --- Data & Pricing (Fixed Rates for Reliability) ---
+# --- Data & Pricing ---
 RATES = {
     'USD': 1.25, 'CAD': 1.70, 'AED': 4.60, 'SAR': 4.70,
     'QAR': 4.55, 'KWD': 0.38, 'GBP': 1.00,
@@ -58,8 +56,7 @@ def get_rounded_price(base_price_gbp: int, target_currency: str) -> int | None:
     converted = base_price_gbp * rate
     return int(5 * ceil(converted / 5)) if converted >= 20 else int(ceil(converted))
 
-# --- Bot Handlers (The core logic of your bot) ---
-
+# --- Bot Handlers ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     keyboard = [
         [InlineKeyboardButton("🇬🇧 UK", callback_data='country_uk'), InlineKeyboardButton("🇰🇼 Kuwait", callback_data='country_kw')],
@@ -188,7 +185,7 @@ async def show_price_info(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         f"💰 *Pricing & Info ({country_info['name']})*\n\n"
         f"🔹 *Individual:* `{price1} {currency_code}`\n"
         f"🔹 *Group (2-3):* `{price2} {currency_code}` /student\n"
-        f"🔹 *Group (4+):* `{price3} {currency_code}` /student\n\n"
+        f"� *Group (4+):* `{price3} {currency_code}` /student\n\n"
         f"ℹ️ *Info*\n— Lessons are online via Zoom.\n— UK flexible payment options.\n— Completion certificates available."
     )
     keyboard = [[InlineKeyboardButton("⬅️ Back to Services", callback_data='back_to_services')]]
@@ -241,6 +238,11 @@ def index():
 
 @app.route(f"/{BOT_TOKEN}", methods=["POST"])
 async def webhook():
+    """This is the function that receives updates from Telegram."""
+    # This is the crucial fix: Ensure the app is initialized before processing updates.
+    if not ptb_app.is_initialized:
+        await ptb_app.initialize()
+
     update_data = request.get_json(force=True)
     update = Update.de_json(update_data, ptb_app.bot)
     await ptb_app.process_update(update)
@@ -250,15 +252,14 @@ async def setup_webhook():
     if not WEBHOOK_URL:
         logger.error("FATAL: WEBHOOK_URL environment variable not set!")
         return
+    # We don't need to initialize here anymore, as the webhook function will handle it.
     await ptb_app.bot.set_webhook(url=f"{WEBHOOK_URL}/{BOT_TOKEN}", allowed_updates=Update.ALL_TYPES)
     logger.info(f"Webhook set to {WEBHOOK_URL}/{BOT_TOKEN}")
 
-# --- Main Execution Block (Handles both local testing and deployment) ---
+# --- Main Execution Block ---
 if __name__ == "__main__":
-    # Check if a command-line argument is provided
     if len(sys.argv) > 1 and sys.argv[1] == 'setup_webhook':
         # This part is for Render's build command
-        asyncio.run(ptb_app.initialize())
         asyncio.run(setup_webhook())
     else:
         # This part is for running the bot locally for testing

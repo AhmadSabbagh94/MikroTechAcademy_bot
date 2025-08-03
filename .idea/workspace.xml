@@ -4,12 +4,9 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e910b3e5-56ce-41e9-b75a-cd151c820431" name="Changes" comment="The bot is ready &#10;to be used">
-      <change afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.env" beforeDir="false" afterPath="$PROJECT_DIR$/.env" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="e910b3e5-56ce-41e9-b75a-cd151c820431" name="Changes" comment="Update it to be Flesk applicaiton">
+      <change afterPath="$PROJECT_DIR$/Procfile" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/bot.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -95,11 +92,20 @@
       <option name="project" value="LOCAL" />
       <updated>1752242861331</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Update it to be Flesk applicaiton">
+      <option name="closed" value="true" />
+      <created>1754230410914</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1754230410914</updated>
+    </task>
+    <option name="localTasksCounter" value="3" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="The bot is ready &#10;to be used" />
-    <option name="LAST_COMMIT_MESSAGE" value="The bot is ready &#10;to be used" />
+    <MESSAGE value="Update it to be Flesk applicaiton" />
+    <option name="LAST_COMMIT_MESSAGE" value="Update it to be Flesk applicaiton" />
   </component>
 </project>

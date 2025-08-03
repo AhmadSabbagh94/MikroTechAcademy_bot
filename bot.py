@@ -269,11 +269,10 @@ ptb_app.add_handler(conv_handler)
 app = Flask(__name__)
 
 
-# This is the corrected startup logic.
-# The `startup` function is now defined but not decorated with the old decorator.
-# It will be called by the build command on Render.
+# The `startup` function will be called by the build command on Render.
 async def startup():
     """Initialize the bot application and set the webhook."""
+    logger.info("Initializing application and setting webhook...")
     await ptb_app.initialize()
     if WEBHOOK_URL:
         await ptb_app.bot.set_webhook(url=f"{WEBHOOK_URL}/{BOT_TOKEN}", allowed_updates=Update.ALL_TYPES)
@@ -292,6 +291,8 @@ async def webhook():
     """This function receives and processes updates directly."""
     logger.info("--- Webhook received an update ---")
     try:
+        # The application is already initialized by the startup process.
+        # We can directly process the update.
         update_data = request.get_json(force=True)
         update = Update.de_json(update_data, ptb_app.bot)
         await ptb_app.process_update(update)
@@ -311,4 +312,5 @@ if __name__ == "__main__":
     else:
         # This block is for local testing only
         print("Bot is running locally in polling mode...")
+        # The run_polling() method handles initialization automatically.
         ptb_app.run_polling()

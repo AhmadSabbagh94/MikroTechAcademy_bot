@@ -1,4 +1,4 @@
-# MikroTechAcademy Bot - Final Version (Fixed for Deployment)
+# MikroTechAcademy Bot - Final Version (with Enhanced Logging)
 # File: bot.py
 
 import logging
@@ -33,7 +33,8 @@ ADMIN_CHAT_ID = os.environ.get("ADMIN_CLIENT_ID")
 WEBHOOK_URL = os.environ.get("WEBHOOK_URL")
 
 # --- Conversation States ---
-SELECTING_COUNTRY, SELECTING_SERVICE, SELECTING_TUTOR_OPTION, AWAITING_ASSIGNMENT, AWAITING_NAME, AWAITING_PHONE, AWAITING_SUBJECT = range(7)
+SELECTING_COUNTRY, SELECTING_SERVICE, SELECTING_TUTOR_OPTION, AWAITING_ASSIGNMENT, AWAITING_NAME, AWAITING_PHONE, AWAITING_SUBJECT = range(
+    7)
 
 # --- Data & Pricing ---
 RATES = {
@@ -47,6 +48,7 @@ COUNTRIES = {
     'ca': {'name': 'Canada', 'currency': 'CAD'},
 }
 
+
 # --- Helper Functions ---
 def get_rounded_price(base_price_gbp: int, target_currency: str) -> int | None:
     rate = RATES.get(target_currency)
@@ -56,12 +58,18 @@ def get_rounded_price(base_price_gbp: int, target_currency: str) -> int | None:
     converted = base_price_gbp * rate
     return int(5 * ceil(converted / 5)) if converted >= 20 else int(ceil(converted))
 
+
 # --- Bot Handlers ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
+    user = update.effective_user
+    logger.info(f"User {user.id} ({user.first_name}) started the conversation.")
     keyboard = [
-        [InlineKeyboardButton("🇬🇧 UK", callback_data='country_uk'), InlineKeyboardButton("🇰🇼 Kuwait", callback_data='country_kw')],
-        [InlineKeyboardButton("🇦🇪 UAE", callback_data='country_ae'), InlineKeyboardButton("🇸🇦 Saudi Arabia", callback_data='country_sa')],
-        [InlineKeyboardButton("🇶🇦 Qatar", callback_data='country_qa'), InlineKeyboardButton("🇺🇸 USA", callback_data='country_us')],
+        [InlineKeyboardButton("🇬🇧 UK", callback_data='country_uk'),
+         InlineKeyboardButton("🇰🇼 Kuwait", callback_data='country_kw')],
+        [InlineKeyboardButton("🇦🇪 UAE", callback_data='country_ae'),
+         InlineKeyboardButton("🇸🇦 Saudi Arabia", callback_data='country_sa')],
+        [InlineKeyboardButton("🇶🇦 Qatar", callback_data='country_qa'),
+         InlineKeyboardButton("🇺🇸 USA", callback_data='country_us')],
         [InlineKeyboardButton("🇨🇦 Canada", callback_data='country_ca')],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
@@ -72,6 +80,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     else:
         await update.message.reply_text(text, reply_markup=reply_markup)
     return SELECTING_COUNTRY
+
 
 async def show_services_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
@@ -89,25 +98,35 @@ async def show_services_menu(update: Update, context: ContextTypes.DEFAULT_TYPE)
     await query.edit_message_text(text=text, reply_markup=reply_markup, parse_mode='Markdown')
     return SELECTING_SERVICE
 
+
 async def select_country(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
     country_code = query.data.split('_')[1]
     context.user_data['country'] = COUNTRIES[country_code]
+    logger.info(f"User {query.from_user.id} selected country: {country_code.upper()}")
     return await show_services_menu(update, context)
+
 
 async def request_assignment_upload(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
     await query.answer()
-    await query.edit_message_text(text="Please upload a file, an image, or type a description of the assignment.\n\nTo go back, press /cancel.")
+    await query.edit_message_text(
+        text="Please upload a file, an image, or type a description of the assignment.\n\nTo go back, press /cancel.")
     return AWAITING_ASSIGNMENT
+
 
 async def handle_assignment(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     user = update.message.from_user
     user_country = context.user_data.get('country', {'name': 'Unknown'})['name']
-    await context.bot.send_message(chat_id=ADMIN_CHAT_ID, text=f"🔔 *New Assignment*\n\n*From:* {user.first_name} (`{user.id}`)\n*Country:* {user_country}", parse_mode='Markdown')
-    await context.bot.forward_message(chat_id=ADMIN_CHAT_ID, from_chat_id=update.message.chat_id, message_id=update.message.message_id)
+    logger.info(f"Received assignment from user {user.id}")
+    await context.bot.send_message(chat_id=ADMIN_CHAT_ID,
+                                   text=f"🔔 *New Assignment*\n\n*From:* {user.first_name} (`{user.id}`)\n*Country:* {user_country}",
+                                   parse_mode='Markdown')
+    await context.bot.forward_message(chat_id=ADMIN_CHAT_ID, from_chat_id=update.message.chat_id,
+                                      message_id=update.message.message_id)
     await update.message.reply_text("✅ Thank you! Your assignment has been sent. A tutor will contact you shortly.")
     return ConversationHandler.END
+
 
 async def show_tutor_options(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
@@ -121,20 +140,24 @@ async def show_tutor_options(update: Update, context: ContextTypes.DEFAULT_TYPE)
     await query.edit_message_text(text="How would you like to connect with a tutor?", reply_markup=reply_markup)
     return SELECTING_TUTOR_OPTION
 
+
 async def tutor_direct_connect(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
     await query.answer()
     user = query.from_user
     user_country = context.user_data.get('country', {'name': 'Unknown'})['name']
     user_chat_link = f"tg://user?id={user.id}"
+    logger.info(f"User {user.id} requested direct connection.")
     admin_text = (
         f"🔔 *Direct Connection Request*\n\n"
         f"User *{user.first_name}* from *{user_country}* wants to connect directly.\n\n"
         f"➡️ [Click here to chat with {user.first_name}]({user_chat_link})"
     )
     await context.bot.send_message(chat_id=ADMIN_CHAT_ID, text=admin_text, parse_mode='Markdown')
-    await query.edit_message_text("✅ The admin has been notified!\nA tutor will contact you directly on Telegram shortly.")
+    await query.edit_message_text(
+        "✅ The admin has been notified!\nA tutor will contact you directly on Telegram shortly.")
     return ConversationHandler.END
+
 
 async def request_details_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
@@ -143,15 +166,18 @@ async def request_details_start(update: Update, context: ContextTypes.DEFAULT_TY
     await query.edit_message_text(text="Of course. Let's get a few details.\n\nFirst, what is your full name?")
     return AWAITING_NAME
 
+
 async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data['name'] = update.message.text
     await update.message.reply_text("Thanks! What is your phone number? (Include country code)")
     return AWAITING_PHONE
 
+
 async def get_phone(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data['phone'] = update.message.text
     await update.message.reply_text("Perfect. And what subject do you need help with?")
     return AWAITING_SUBJECT
+
 
 async def finalise_request(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data['subject'] = update.message.text
@@ -160,6 +186,7 @@ async def finalise_request(update: Update, context: ContextTypes.DEFAULT_TYPE) -
     user_country = user_data.get('country', {'name': 'Unknown'})['name']
     service = user_data.get('service_choice', 'service_lesson')
     title = "Private Lesson Request" if service == 'service_lesson' else "Tutor Request (Form)"
+    logger.info(f"Finalizing '{title}' for user {user.id}")
     admin_message = (
         f"🔔 *New {title}!*\n\n"
         f"*Name:* {user_data.get('name', 'N/A')}\n"
@@ -169,15 +196,19 @@ async def finalise_request(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         f"*User ID:* `{user.id}`"
     )
     await context.bot.send_message(chat_id=ADMIN_CHAT_ID, text=admin_message, parse_mode='Markdown')
-    await update.message.reply_text("✅ All set! We've sent your request. A tutor will be in touch shortly.", reply_markup=ReplyKeyboardRemove())
+    await update.message.reply_text("✅ All set! We've sent your request. A tutor will be in touch shortly.",
+                                    reply_markup=ReplyKeyboardRemove())
     return ConversationHandler.END
+
 
 async def show_price_info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
     await query.answer()
     country_info = context.user_data['country']
     currency_code = country_info['currency']
-    price1, price2, price3 = get_rounded_price(40, currency_code), get_rounded_price(35, currency_code), get_rounded_price(30, currency_code)
+    price1, price2, price3 = get_rounded_price(40, currency_code), get_rounded_price(35,
+                                                                                     currency_code), get_rounded_price(
+        30, currency_code)
     if price1 is None:
         await query.edit_message_text("Sorry, pricing information for your region is currently unavailable.")
         return SELECTING_SERVICE
@@ -185,17 +216,22 @@ async def show_price_info(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
         f"💰 *Pricing & Info ({country_info['name']})*\n\n"
         f"🔹 *Individual:* `{price1} {currency_code}`\n"
         f"🔹 *Group (2-3):* `{price2} {currency_code}` /student\n"
-        f"� *Group (4+):* `{price3} {currency_code}` /student\n\n"
+        f"🔹 *Group (4+):* `{price3} {currency_code}` /student\n\n"
         f"ℹ️ *Info*\n— Lessons are online via Zoom.\n— UK flexible payment options.\n— Completion certificates available."
     )
     keyboard = [[InlineKeyboardButton("⬅️ Back to Services", callback_data='back_to_services')]]
     await query.edit_message_text(text=price_text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
     return SELECTING_TUTOR_OPTION
 
+
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
-    await update.message.reply_text("Operation cancelled. Type /start to begin again.", reply_markup=ReplyKeyboardRemove())
+    user = update.effective_user
+    logger.info(f"User {user.id} cancelled the conversation.")
+    await update.message.reply_text("Operation cancelled. Type /start to begin again.",
+                                    reply_markup=ReplyKeyboardRemove())
     context.user_data.clear()
     return ConversationHandler.END
+
 
 # --- Application Setup ---
 if not BOT_TOKEN:
@@ -232,36 +268,44 @@ ptb_app.add_handler(conv_handler)
 # --- Webhook Setup (for Deployment) ---
 app = Flask(__name__)
 
+
 @app.route("/")
 def index():
     return "Bot is running!"
 
+
 @app.route(f"/{BOT_TOKEN}", methods=["POST"])
 async def webhook():
-    """This is the function that receives updates from Telegram."""
-    # This is the crucial fix: Ensure the app is initialized before processing updates.
+    logger.info("--- Webhook received an update ---")
     if not ptb_app.is_initialized:
         await ptb_app.initialize()
 
     update_data = request.get_json(force=True)
+    logger.info(f"Update data: {update_data}")
+
     update = Update.de_json(update_data, ptb_app.bot)
+
+    logger.info("Processing update...")
     await ptb_app.process_update(update)
+    logger.info("--- Update processed successfully ---")
+
     return "OK"
 
+
 async def setup_webhook():
+    logger.info("Attempting to set webhook...")
     if not WEBHOOK_URL:
         logger.error("FATAL: WEBHOOK_URL environment variable not set!")
         return
-    # We don't need to initialize here anymore, as the webhook function will handle it.
     await ptb_app.bot.set_webhook(url=f"{WEBHOOK_URL}/{BOT_TOKEN}", allowed_updates=Update.ALL_TYPES)
     logger.info(f"Webhook set to {WEBHOOK_URL}/{BOT_TOKEN}")
+
 
 # --- Main Execution Block ---
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == 'setup_webhook':
-        # This part is for Render's build command
+        logger.info("Running webhook setup from build command...")
         asyncio.run(setup_webhook())
     else:
-        # This part is for running the bot locally for testing
         print("Bot is running locally in polling mode...")
         ptb_app.run_polling()

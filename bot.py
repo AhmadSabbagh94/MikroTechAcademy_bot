@@ -221,6 +221,7 @@ if not BOT_TOKEN:
     sys.exit(1)
 
 ptb_app = Application.builder().token(BOT_TOKEN).build()
+ptb_initialized = False  # New flag
 
 conv_handler = ConversationHandler(
     entry_points=[CommandHandler('start', start)],
@@ -266,8 +267,14 @@ def index():
 
 @app.route(f"/{BOT_TOKEN}", methods=["POST"])
 async def webhook():
+    global ptb_initialized
     logger.info("--- Webhook received an update ---")
     try:
+        if not ptb_initialized:
+            await ptb_app.initialize()
+            await ptb_app.start()
+            ptb_initialized = True
+
         update_data = request.get_json(force=True)
         update = Update.de_json(update_data, ptb_app.bot)
         await ptb_app.process_update(update)
@@ -275,6 +282,7 @@ async def webhook():
     except Exception as e:
         logger.error(f"Error processing update: {e}")
     return "OK"
+
 
 if __name__ == "__main__":
     if os.environ.get("RENDER", "false").lower() == "true":

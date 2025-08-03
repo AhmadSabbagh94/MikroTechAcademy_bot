@@ -1,0 +1,11 @@
+# Telegram Bot library
+python-telegram-bot
+
+# Flask Web Framework
+Flask
+
+# Production Web Server for Flask
+gunicorn
+
+# For loading .env files locally
+python-dotenv

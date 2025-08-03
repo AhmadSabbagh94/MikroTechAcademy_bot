@@ -1,6 +1,3 @@
-# MikroTechAcademy Bot - Final Version (with Enhanced Logging)
-# File: bot.py
-
 import logging
 import os
 import sys
@@ -64,7 +61,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     user = update.effective_user
     logger.info(f"User {user.id} ({user.first_name}) started the conversation.")
     keyboard = [
-        [InlineKeyboardButton("🇬🇧 UK", callback_data='country_uk'),
+        [InlineKeyboardButton("�🇧 UK", callback_data='country_uk'),
          InlineKeyboardButton("🇰🇼 Kuwait", callback_data='country_kw')],
         [InlineKeyboardButton("🇦🇪 UAE", callback_data='country_ae'),
          InlineKeyboardButton("🇸🇦 Saudi Arabia", callback_data='country_sa')],
@@ -276,9 +273,11 @@ def index():
 
 @app.route(f"/{BOT_TOKEN}", methods=["POST"])
 async def webhook():
+    """This is the function that receives updates from Telegram."""
     logger.info("--- Webhook received an update ---")
-    if not ptb_app.is_initialized:
-        await ptb_app.initialize()
+
+    # This is the crucial fix: Initialize the app before processing the update.
+    await ptb_app.initialize()
 
     update_data = request.get_json(force=True)
     logger.info(f"Update data: {update_data}")
@@ -297,6 +296,8 @@ async def setup_webhook():
     if not WEBHOOK_URL:
         logger.error("FATAL: WEBHOOK_URL environment variable not set!")
         return
+    # Initialize the app before setting the webhook
+    await ptb_app.initialize()
     await ptb_app.bot.set_webhook(url=f"{WEBHOOK_URL}/{BOT_TOKEN}", allowed_updates=Update.ALL_TYPES)
     logger.info(f"Webhook set to {WEBHOOK_URL}/{BOT_TOKEN}")
 

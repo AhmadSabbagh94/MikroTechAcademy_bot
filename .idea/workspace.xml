@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e910b3e5-56ce-41e9-b75a-cd151c820431" name="Changes" comment="added Procfile">
+    <list default="true" id="e910b3e5-56ce-41e9-b75a-cd151c820431" name="Changes" comment="added Procfile updated">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Procfile" beforeDir="false" afterPath="$PROJECT_DIR$/Procfile" afterDir="false" />
     </list>
@@ -108,13 +108,22 @@
       <option name="project" value="LOCAL" />
       <updated>1754230972108</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="added Procfile updated">
+      <option name="closed" value="true" />
+      <created>1754234890127</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1754234890127</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="The bot is ready &#10;to be used" />
     <MESSAGE value="Update it to be Flesk applicaiton" />
     <MESSAGE value="added Procfile" />
-    <option name="LAST_COMMIT_MESSAGE" value="added Procfile" />
+    <MESSAGE value="added Procfile updated" />
+    <option name="LAST_COMMIT_MESSAGE" value="added Procfile updated" />
   </component>
 </project>

@@ -291,10 +291,12 @@ async def webhook():
     """This function receives and processes updates directly."""
     logger.info("--- Webhook received an update ---")
     try:
-        # The application is already initialized by the startup process.
-        # We can directly process the update.
+        # This is the crucial fix: Initialize the application at the start of the request.
+        await ptb_app.initialize()
+
         update_data = request.get_json(force=True)
         update = Update.de_json(update_data, ptb_app.bot)
+
         await ptb_app.process_update(update)
         logger.info("--- Update processed successfully ---")
     except Exception as e:

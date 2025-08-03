@@ -20,10 +20,10 @@ from telegram.ext import (
     ConversationHandler,
 )
 
-# Load variables from .env file when running locally
+# Load environment variables
 load_dotenv()
 
-# --- Basic Setup ---
+# --- Logging ---
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -32,11 +32,10 @@ BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
 ADMIN_CHAT_ID = os.environ.get("ADMIN_CLIENT_ID")
 WEBHOOK_URL = os.environ.get("WEBHOOK_URL")
 
-# --- Conversation States ---
-SELECTING_COUNTRY, SELECTING_SERVICE, SELECTING_TUTOR_OPTION, AWAITING_ASSIGNMENT, AWAITING_NAME, AWAITING_PHONE, AWAITING_SUBJECT = range(
-    7)
+# --- States ---
+SELECTING_COUNTRY, SELECTING_SERVICE, SELECTING_TUTOR_OPTION, AWAITING_ASSIGNMENT, AWAITING_NAME, AWAITING_PHONE, AWAITING_SUBJECT = range(7)
 
-# --- Data & Pricing ---
+# --- Pricing ---
 RATES = {
     'USD': 1.25, 'CAD': 1.70, 'AED': 4.60, 'SAR': 4.70,
     'QAR': 4.55, 'KWD': 0.38, 'GBP': 1.00,
@@ -48,8 +47,7 @@ COUNTRIES = {
     'ca': {'name': 'Canada', 'currency': 'CAD'},
 }
 
-
-# --- Helper Functions ---
+# --- Helper ---
 def get_rounded_price(base_price_gbp: int, target_currency: str) -> int | None:
     rate = RATES.get(target_currency)
     if not rate:
@@ -58,8 +56,7 @@ def get_rounded_price(base_price_gbp: int, target_currency: str) -> int | None:
     converted = base_price_gbp * rate
     return int(5 * ceil(converted / 5)) if converted >= 20 else int(ceil(converted))
 
-
-# --- Bot Handlers ---
+# --- Handlers ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     user = update.effective_user
     logger.info(f"User {user.id} ({user.first_name}) started the conversation.")
@@ -81,7 +78,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         await update.message.reply_text(text, reply_markup=reply_markup)
     return SELECTING_COUNTRY
 
-
 async def show_services_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
     await query.answer()
@@ -98,7 +94,6 @@ async def show_services_menu(update: Update, context: ContextTypes.DEFAULT_TYPE)
     await query.edit_message_text(text=text, reply_markup=reply_markup, parse_mode='Markdown')
     return SELECTING_SERVICE
 
-
 async def select_country(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
     country_code = query.data.split('_')[1]
@@ -106,27 +101,23 @@ async def select_country(update: Update, context: ContextTypes.DEFAULT_TYPE) -> 
     logger.info(f"User {query.from_user.id} selected country: {country_code.upper()}")
     return await show_services_menu(update, context)
 
-
 async def request_assignment_upload(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
     await query.answer()
     await query.edit_message_text(
-        text="Please upload a file, an image, or type a description of the assignment.\n\nTo go back, press /cancel.")
+        text="Please upload a file, image, or type a description of the assignment.\n\nTo go back, press /cancel.")
     return AWAITING_ASSIGNMENT
-
 
 async def handle_assignment(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     user = update.message.from_user
     user_country = context.user_data.get('country', {'name': 'Unknown'})['name']
     logger.info(f"Received assignment from user {user.id}")
     await context.bot.send_message(chat_id=ADMIN_CHAT_ID,
-                                   text=f"🔔 *New Assignment*\n\n*From:* {user.first_name} (`{user.id}`)\n*Country:* {user_country}",
-                                   parse_mode='Markdown')
-    await context.bot.forward_message(chat_id=ADMIN_CHAT_ID, from_chat_id=update.message.chat_id,
-                                      message_id=update.message.message_id)
+        text=f"🔔 *New Assignment*\n\n*From:* {user.first_name} (`{user.id}`)\n*Country:* {user_country}",
+        parse_mode='Markdown')
+    await context.bot.forward_message(chat_id=ADMIN_CHAT_ID, from_chat_id=update.message.chat_id, message_id=update.message.message_id)
     await update.message.reply_text("✅ Thank you! Your assignment has been sent. A tutor will contact you shortly.")
     return ConversationHandler.END
-
 
 async def show_tutor_options(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
@@ -139,7 +130,6 @@ async def show_tutor_options(update: Update, context: ContextTypes.DEFAULT_TYPE)
     reply_markup = InlineKeyboardMarkup(keyboard)
     await query.edit_message_text(text="How would you like to connect with a tutor?", reply_markup=reply_markup)
     return SELECTING_TUTOR_OPTION
-
 
 async def tutor_direct_connect(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
@@ -154,10 +144,8 @@ async def tutor_direct_connect(update: Update, context: ContextTypes.DEFAULT_TYP
         f"➡️ [Click here to chat with {user.first_name}]({user_chat_link})"
     )
     await context.bot.send_message(chat_id=ADMIN_CHAT_ID, text=admin_text, parse_mode='Markdown')
-    await query.edit_message_text(
-        "✅ The admin has been notified!\nA tutor will contact you directly on Telegram shortly.")
+    await query.edit_message_text("✅ The admin has been notified!\nA tutor will contact you directly on Telegram shortly.")
     return ConversationHandler.END
-
 
 async def request_details_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
@@ -166,18 +154,15 @@ async def request_details_start(update: Update, context: ContextTypes.DEFAULT_TY
     await query.edit_message_text(text="Of course. Let's get a few details.\n\nFirst, what is your full name?")
     return AWAITING_NAME
 
-
 async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data['name'] = update.message.text
     await update.message.reply_text("Thanks! What is your phone number? (Include country code)")
     return AWAITING_PHONE
 
-
 async def get_phone(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data['phone'] = update.message.text
     await update.message.reply_text("Perfect. And what subject do you need help with?")
     return AWAITING_SUBJECT
-
 
 async def finalise_request(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data['subject'] = update.message.text
@@ -200,15 +185,14 @@ async def finalise_request(update: Update, context: ContextTypes.DEFAULT_TYPE) -
                                     reply_markup=ReplyKeyboardRemove())
     return ConversationHandler.END
 
-
 async def show_price_info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
     await query.answer()
     country_info = context.user_data['country']
     currency_code = country_info['currency']
-    price1, price2, price3 = get_rounded_price(40, currency_code), get_rounded_price(35,
-                                                                                     currency_code), get_rounded_price(
-        30, currency_code)
+    price1 = get_rounded_price(40, currency_code)
+    price2 = get_rounded_price(35, currency_code)
+    price3 = get_rounded_price(30, currency_code)
     if price1 is None:
         await query.edit_message_text("Sorry, pricing information for your region is currently unavailable.")
         return SELECTING_SERVICE
@@ -223,7 +207,6 @@ async def show_price_info(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     await query.edit_message_text(text=price_text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
     return SELECTING_TUTOR_OPTION
 
-
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     user = update.effective_user
     logger.info(f"User {user.id} cancelled the conversation.")
@@ -232,8 +215,7 @@ async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data.clear()
     return ConversationHandler.END
 
-
-# --- Application Setup ---
+# --- App setup ---
 if not BOT_TOKEN:
     logger.fatal("FATAL: TELEGRAM_BOT_TOKEN environment variable not set!")
     sys.exit(1)
@@ -265,54 +247,39 @@ conv_handler = ConversationHandler(
 )
 ptb_app.add_handler(conv_handler)
 
-# --- Webhook Setup (for Deployment) ---
+# --- Web Server for Render ---
 app = Flask(__name__)
 
-
-# The `startup` function will be called by the build command on Render.
 async def startup():
-    """Initialize the bot application and set the webhook."""
     logger.info("Initializing application and setting webhook...")
     await ptb_app.initialize()
+    await ptb_app.start()
     if WEBHOOK_URL:
         await ptb_app.bot.set_webhook(url=f"{WEBHOOK_URL}/{BOT_TOKEN}", allowed_updates=Update.ALL_TYPES)
         logger.info(f"Webhook set to {WEBHOOK_URL}/{BOT_TOKEN}")
     else:
         logger.info("WEBHOOK_URL not set, skipping webhook setup.")
 
-
 @app.route("/")
 def index():
     return "Bot is running!"
 
-
 @app.route(f"/{BOT_TOKEN}", methods=["POST"])
 async def webhook():
-    """This function receives and processes updates directly."""
     logger.info("--- Webhook received an update ---")
     try:
-        # This is the crucial fix: Initialize the application at the start of the request.
-        await ptb_app.initialize()
-
         update_data = request.get_json(force=True)
         update = Update.de_json(update_data, ptb_app.bot)
-
         await ptb_app.process_update(update)
         logger.info("--- Update processed successfully ---")
     except Exception as e:
         logger.error(f"Error processing update: {e}")
-
     return "OK"
 
-
-# --- Main Execution Block ---
+# --- Local Testing ---
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == 'setup_webhook':
-        # This is called by Render's build command
-        logger.info("Running startup and webhook setup...")
         asyncio.run(startup())
     else:
-        # This block is for local testing only
         print("Bot is running locally in polling mode...")
-        # The run_polling() method handles initialization automatically.
         ptb_app.run_polling()

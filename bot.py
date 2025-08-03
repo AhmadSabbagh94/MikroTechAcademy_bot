@@ -1,4 +1,4 @@
-# MikroTechAcademy Bot - Final Version (Timeout Fix)
+# MikroTechAcademy Bot - Final Version (Direct Processing Fix)
 # File: bot.py
 
 import logging
@@ -276,18 +276,17 @@ def index():
 
 @app.route(f"/{BOT_TOKEN}", methods=["POST"])
 async def webhook():
-    """This function receives updates and processes them in the background."""
+    """This function receives and processes updates directly."""
     logger.info("--- Webhook received an update ---")
+    try:
+        await ptb_app.initialize()
+        update_data = request.get_json(force=True)
+        update = Update.de_json(update_data, ptb_app.bot)
+        await ptb_app.process_update(update)
+        logger.info("--- Update processed successfully ---")
+    except Exception as e:
+        logger.error(f"Error processing update: {e}")
 
-    await ptb_app.initialize()
-    update_data = request.get_json(force=True)
-    update = Update.de_json(update_data, ptb_app.bot)
-
-    # This is the key change: Schedule the processing to run in the background
-    # and return "OK" to Telegram immediately to prevent a timeout.
-    asyncio.create_task(ptb_app.process_update(update))
-
-    logger.info("--- Acknowledged webhook, processing in background ---")
     return "OK"
 
 

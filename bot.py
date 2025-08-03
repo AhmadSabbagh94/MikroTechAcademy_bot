@@ -1,4 +1,4 @@
-# MikroTechAcademy Bot - Final Version (Corrected Initialization)
+# MikroTechAcademy Bot - Final Version (Corrected for Deployment)
 # File: bot.py
 
 import logging
@@ -269,13 +269,17 @@ ptb_app.add_handler(conv_handler)
 app = Flask(__name__)
 
 
-@app.before_first_request
+# This is the corrected startup logic.
+# The `startup` function is now defined but not decorated with the old decorator.
+# It will be called by the build command on Render.
 async def startup():
-    """Initialize the bot application before the first request."""
+    """Initialize the bot application and set the webhook."""
     await ptb_app.initialize()
     if WEBHOOK_URL:
         await ptb_app.bot.set_webhook(url=f"{WEBHOOK_URL}/{BOT_TOKEN}", allowed_updates=Update.ALL_TYPES)
         logger.info(f"Webhook set to {WEBHOOK_URL}/{BOT_TOKEN}")
+    else:
+        logger.info("WEBHOOK_URL not set, skipping webhook setup.")
 
 
 @app.route("/")
@@ -298,8 +302,13 @@ async def webhook():
     return "OK"
 
 
-# --- Main Execution Block (for local testing) ---
+# --- Main Execution Block ---
 if __name__ == "__main__":
-    # This block is for local testing only and will not run on Render
-    print("Bot is running locally in polling mode...")
-    ptb_app.run_polling()
+    if len(sys.argv) > 1 and sys.argv[1] == 'setup_webhook':
+        # This is called by Render's build command
+        logger.info("Running startup and webhook setup...")
+        asyncio.run(startup())
+    else:
+        # This block is for local testing only
+        print("Bot is running locally in polling mode...")
+        ptb_app.run_polling()

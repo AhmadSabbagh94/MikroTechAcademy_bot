@@ -4,8 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e910b3e5-56ce-41e9-b75a-cd151c820431" name="Changes" comment="solve problem">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="e910b3e5-56ce-41e9-b75a-cd151c820431" name="Changes" comment="update await problem">
       <change beforePath="$PROJECT_DIR$/bot.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -204,7 +203,15 @@
       <option name="project" value="LOCAL" />
       <updated>1754245994422</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="update await problem">
+      <option name="closed" value="true" />
+      <created>1754264620288</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1754264620288</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -222,6 +229,7 @@
     <MESSAGE value="Fix bugs - time out fixed again" />
     <MESSAGE value="Final commit twice clicking solving trials" />
     <MESSAGE value="solve problem" />
-    <option name="LAST_COMMIT_MESSAGE" value="solve problem" />
+    <MESSAGE value="update await problem" />
+    <option name="LAST_COMMIT_MESSAGE" value="update await problem" />
   </component>
 </project>

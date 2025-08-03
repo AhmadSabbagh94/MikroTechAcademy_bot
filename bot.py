@@ -276,9 +276,9 @@ async def webhook():
         logger.error(f"Error processing update: {e}")
     return "OK"
 
-# --- Local Testing ---
 if __name__ == "__main__":
-    if len(sys.argv) > 1 and sys.argv[1] == 'setup_webhook':
+    if os.environ.get("RENDER", "false").lower() == "true":
+        # Automatically run startup on Render deployment
         asyncio.run(startup())
     else:
         print("Bot is running locally in polling mode...")

@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e910b3e5-56ce-41e9-b75a-cd151c820431" name="Changes" comment="Fix bugs2">
+    <list default="true" id="e910b3e5-56ce-41e9-b75a-cd151c820431" name="Changes" comment="Fix bugs 3">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bot.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot.py" afterDir="false" />
     </list>
@@ -148,7 +148,15 @@
       <option name="project" value="LOCAL" />
       <updated>1754240256286</updated>
     </task>
-    <option name="localTasksCounter" value="9" />
+    <task id="LOCAL-00009" summary="Fix bugs 3">
+      <option name="closed" value="true" />
+      <created>1754241291987</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1754241291987</updated>
+    </task>
+    <option name="localTasksCounter" value="10" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -160,6 +168,7 @@
     <MESSAGE value="requirements.txt updated" />
     <MESSAGE value="Fix bugs" />
     <MESSAGE value="Fix bugs2" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fix bugs2" />
+    <MESSAGE value="Fix bugs 3" />
+    <option name="LAST_COMMIT_MESSAGE" value="Fix bugs 3" />
   </component>
 </project>

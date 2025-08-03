@@ -1,4 +1,4 @@
-# MikroTechAcademy Bot - Final Version (Direct Processing Fix)
+# MikroTechAcademy Bot - Final Version (Corrected Initialization)
 # File: bot.py
 
 import logging
@@ -269,6 +269,15 @@ ptb_app.add_handler(conv_handler)
 app = Flask(__name__)
 
 
+@app.before_first_request
+async def startup():
+    """Initialize the bot application before the first request."""
+    await ptb_app.initialize()
+    if WEBHOOK_URL:
+        await ptb_app.bot.set_webhook(url=f"{WEBHOOK_URL}/{BOT_TOKEN}", allowed_updates=Update.ALL_TYPES)
+        logger.info(f"Webhook set to {WEBHOOK_URL}/{BOT_TOKEN}")
+
+
 @app.route("/")
 def index():
     return "Bot is running!"
@@ -279,7 +288,6 @@ async def webhook():
     """This function receives and processes updates directly."""
     logger.info("--- Webhook received an update ---")
     try:
-        await ptb_app.initialize()
         update_data = request.get_json(force=True)
         update = Update.de_json(update_data, ptb_app.bot)
         await ptb_app.process_update(update)
@@ -290,21 +298,8 @@ async def webhook():
     return "OK"
 
 
-async def setup_webhook():
-    logger.info("Attempting to set webhook...")
-    if not WEBHOOK_URL:
-        logger.error("FATAL: WEBHOOK_URL environment variable not set!")
-        return
-    await ptb_app.initialize()
-    await ptb_app.bot.set_webhook(url=f"{WEBHOOK_URL}/{BOT_TOKEN}", allowed_updates=Update.ALL_TYPES)
-    logger.info(f"Webhook set to {WEBHOOK_URL}/{BOT_TOKEN}")
-
-
-# --- Main Execution Block ---
+# --- Main Execution Block (for local testing) ---
 if __name__ == "__main__":
-    if len(sys.argv) > 1 and sys.argv[1] == 'setup_webhook':
-        logger.info("Running webhook setup from build command...")
-        asyncio.run(setup_webhook())
-    else:
-        print("Bot is running locally in polling mode...")
-        ptb_app.run_polling()
+    # This block is for local testing only and will not run on Render
+    print("Bot is running locally in polling mode...")
+    ptb_app.run_polling()

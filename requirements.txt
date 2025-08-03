@@ -1,8 +1,8 @@
 # Telegram Bot library
 python-telegram-bot
 
-# Flask Web Framework
-Flask
+# Flask Web Framework with async support
+Flask[async]
 
 # Production Web Server for Flask
 gunicorn

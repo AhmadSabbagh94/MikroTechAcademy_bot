@@ -4,8 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e910b3e5-56ce-41e9-b75a-cd151c820431" name="Changes" comment=" update.callback_query.answer(cache_time=0)">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+    <list default="true" id="e910b3e5-56ce-41e9-b75a-cd151c820431" name="Changes" comment="webhook update">
       <change beforePath="$PROJECT_DIR$/bot.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -244,7 +243,15 @@
       <option name="project" value="LOCAL" />
       <updated>1754301214812</updated>
     </task>
-    <option name="localTasksCounter" value="21" />
+    <task id="LOCAL-00021" summary="webhook update">
+      <option name="closed" value="true" />
+      <created>1754301541536</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1754301541536</updated>
+    </task>
+    <option name="localTasksCounter" value="22" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -267,6 +274,7 @@
     <MESSAGE value="update main 2" />
     <MESSAGE value="design updated" />
     <MESSAGE value=" update.callback_query.answer(cache_time=0)" />
-    <option name="LAST_COMMIT_MESSAGE" value=" update.callback_query.answer(cache_time=0)" />
+    <MESSAGE value="webhook update" />
+    <option name="LAST_COMMIT_MESSAGE" value="webhook update" />
   </component>
 </project>

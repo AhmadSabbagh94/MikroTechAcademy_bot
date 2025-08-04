@@ -26,6 +26,7 @@ load_dotenv()
 # --- Basic Setup ---
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
+ptb_initialized = False  # <-- Add this here
 
 # --- Configuration ---
 BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")

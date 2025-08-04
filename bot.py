@@ -60,12 +60,9 @@ def get_rounded_price(base_price_gbp: int, target_currency: str) -> int | None:
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     user = update.effective_user
     logger.info(f"User {user.id} ({user.first_name}) started the conversation.")
-    keyboard = [
-        [InlineKeyboardButton("🇬🇧 UK", callback_data='country_uk'), InlineKeyboardButton("🇰🇼 Kuwait", callback_data='country_kw')],
-        [InlineKeyboardButton("🇦🇪 UAE", callback_data='country_ae'), InlineKeyboardButton("🇸🇦 Saudi Arabia", callback_data='country_sa')],
-        [InlineKeyboardButton("🇶🇦 Qatar", callback_data='country_qa'), InlineKeyboardButton("🇺🇸 USA", callback_data='country_us')],
-        [InlineKeyboardButton("🇨🇦 Canada", callback_data='country_ca')],
-    ]
+    keyboard = [[InlineKeyboardButton(name, callback_data=f'country_{code}')]
+                for code, val in COUNTRIES.items() for name in [f"{val['name']}"]]
+
     reply_markup = InlineKeyboardMarkup(keyboard)
     text = ("Welcome to MikroTechAcademy! 🤖\n\nPlease select the country where you are studying:  \n NOTE"
             " some time you need to click TWICE ")

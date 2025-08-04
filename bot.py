@@ -67,7 +67,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
         [InlineKeyboardButton("🇨🇦 Canada", callback_data='country_ca')],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    text = "Welcome to MikroTechAcademy! 🤖\n\nPlease select the country where you are studying:"
+    text = ("Welcome to MikroTechAcademy! 🤖\n\nPlease select the country where you are studying:  \n NOTE"
+            " some time you need to click TWICE ")
     if update.callback_query:
         await update.callback_query.answer(cache_time=0)
         await update.callback_query.edit_message_text(text, reply_markup=reply_markup)

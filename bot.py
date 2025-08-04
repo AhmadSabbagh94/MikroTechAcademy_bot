@@ -1,4 +1,4 @@
-# MikroTechAcademy Bot - Final Version (Double-Click Bug Fixed)
+# MikroTechAcademy Bot - Final Version (Stable Initialization)
 # File: bot.py
 
 import logging
@@ -26,7 +26,6 @@ load_dotenv()
 # --- Basic Setup ---
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 logger = logging.getLogger(__name__)
-ptb_initialized = False  # <-- Add this here
 
 # --- Configuration ---
 BOT_TOKEN = os.environ.get("TELEGRAM_BOT_TOKEN")
@@ -34,8 +33,7 @@ ADMIN_CHAT_ID = os.environ.get("ADMIN_CLIENT_ID")
 WEBHOOK_URL = os.environ.get("WEBHOOK_URL")
 
 # --- Conversation States ---
-SELECTING_COUNTRY, SELECTING_SERVICE, SELECTING_TUTOR_OPTION, AWAITING_ASSIGNMENT, AWAITING_NAME, AWAITING_PHONE, AWAITING_SUBJECT = range(
-    7)
+SELECTING_COUNTRY, SELECTING_SERVICE, SELECTING_TUTOR_OPTION, AWAITING_ASSIGNMENT, AWAITING_NAME, AWAITING_PHONE, AWAITING_SUBJECT = range(7)
 
 # --- Data & Pricing ---
 RATES = {
@@ -49,7 +47,6 @@ COUNTRIES = {
     'ca': {'name': 'Canada', 'currency': 'CAD'},
 }
 
-
 # --- Helper Functions ---
 def get_rounded_price(base_price_gbp: int, target_currency: str) -> int | None:
     rate = RATES.get(target_currency)
@@ -59,34 +56,27 @@ def get_rounded_price(base_price_gbp: int, target_currency: str) -> int | None:
     converted = base_price_gbp * rate
     return int(5 * ceil(converted / 5)) if converted >= 20 else int(ceil(converted))
 
-
 # --- Bot Handlers ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     user = update.effective_user
     logger.info(f"User {user.id} ({user.first_name}) started the conversation.")
     keyboard = [
-        [InlineKeyboardButton("🇬🇧 UK", callback_data='country_uk'),
-         InlineKeyboardButton("🇰🇼 Kuwait", callback_data='country_kw')],
-        [InlineKeyboardButton("🇦🇪 UAE", callback_data='country_ae'),
-         InlineKeyboardButton("🇸🇦 Saudi Arabia", callback_data='country_sa')],
-        [InlineKeyboardButton("🇶🇦 Qatar", callback_data='country_qa'),
-         InlineKeyboardButton("🇺🇸 USA", callback_data='country_us')],
+        [InlineKeyboardButton("🇬🇧 UK", callback_data='country_uk'), InlineKeyboardButton("🇰🇼 Kuwait", callback_data='country_kw')],
+        [InlineKeyboardButton("🇦🇪 UAE", callback_data='country_ae'), InlineKeyboardButton("🇸🇦 Saudi Arabia", callback_data='country_sa')],
+        [InlineKeyboardButton("🇶🇦 Qatar", callback_data='country_qa'), InlineKeyboardButton("🇺🇸 USA", callback_data='country_us')],
         [InlineKeyboardButton("🇨🇦 Canada", callback_data='country_ca')],
     ]
     reply_markup = InlineKeyboardMarkup(keyboard)
     text = "Welcome to MikroTechAcademy! 🤖\n\nPlease select the country where you are studying:"
     if update.callback_query:
-        # Acknowledge the callback to prevent timeout
         await update.callback_query.answer(cache_time=0)
         await update.callback_query.edit_message_text(text, reply_markup=reply_markup)
     else:
         await update.message.reply_text(text, reply_markup=reply_markup)
     return SELECTING_COUNTRY
 
-
 async def show_services_menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
-    # Acknowledge the callback to prevent timeout
     await query.answer(cache_time=0)
     user_country_name = context.user_data['country']['name']
     keyboard = [
@@ -101,42 +91,31 @@ async def show_services_menu(update: Update, context: ContextTypes.DEFAULT_TYPE)
     await query.edit_message_text(text=text, reply_markup=reply_markup, parse_mode='Markdown')
     return SELECTING_SERVICE
 
-
 async def select_country(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
-    # Acknowledge the callback to prevent timeout
     await query.answer(cache_time=0)
     country_code = query.data.split('_')[1]
     context.user_data['country'] = COUNTRIES[country_code]
     logger.info(f"User {query.from_user.id} selected country: {country_code.upper()}")
     return await show_services_menu(update, context)
 
-
 async def request_assignment_upload(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
-    # Acknowledge the callback to prevent timeout
     await query.answer(cache_time=0)
-    await query.edit_message_text(
-        text="Please upload a file, an image, or type a description of the assignment.\n\nTo go back, press /cancel.")
+    await query.edit_message_text(text="Please upload a file, an image, or type a description of the assignment.\n\nTo go back, press /cancel.")
     return AWAITING_ASSIGNMENT
-
 
 async def handle_assignment(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     user = update.message.from_user
     user_country = context.user_data.get('country', {'name': 'Unknown'})['name']
     logger.info(f"Received assignment from user {user.id}")
-    await context.bot.send_message(chat_id=ADMIN_CHAT_ID,
-                                   text=f"🔔 *New Assignment*\n\n*From:* {user.first_name} (`{user.id}`)\n*Country:* {user_country}",
-                                   parse_mode='Markdown')
-    await context.bot.forward_message(chat_id=ADMIN_CHAT_ID, from_chat_id=update.message.chat_id,
-                                      message_id=update.message.message_id)
+    await context.bot.send_message(chat_id=ADMIN_CHAT_ID, text=f"🔔 *New Assignment*\n\n*From:* {user.first_name} (`{user.id}`)\n*Country:* {user_country}", parse_mode='Markdown')
+    await context.bot.forward_message(chat_id=ADMIN_CHAT_ID, from_chat_id=update.message.chat_id, message_id=update.message.message_id)
     await update.message.reply_text("✅ Thank you! Your assignment has been sent. A tutor will contact you shortly.")
     return ConversationHandler.END
 
-
 async def show_tutor_options(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
-    # Acknowledge the callback to prevent timeout
     await query.answer(cache_time=0)
     keyboard = [
         [InlineKeyboardButton("📄 Fill Info Form", callback_data='tutor_fill_form')],
@@ -147,10 +126,8 @@ async def show_tutor_options(update: Update, context: ContextTypes.DEFAULT_TYPE)
     await query.edit_message_text(text="How would you like to connect with a tutor?", reply_markup=reply_markup)
     return SELECTING_TUTOR_OPTION
 
-
 async def tutor_direct_connect(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
-    # Acknowledge the callback to prevent timeout
     await query.answer(cache_time=0)
     user = query.from_user
     user_country = context.user_data.get('country', {'name': 'Unknown'})['name']
@@ -162,31 +139,25 @@ async def tutor_direct_connect(update: Update, context: ContextTypes.DEFAULT_TYP
         f"➡️ [Click here to chat with {user.first_name}]({user_chat_link})"
     )
     await context.bot.send_message(chat_id=ADMIN_CHAT_ID, text=admin_text, parse_mode='Markdown')
-    await query.edit_message_text(
-        "✅ The admin has been notified!\nA tutor will contact you directly on Telegram shortly.")
+    await query.edit_message_text("✅ The admin has been notified!\nA tutor will contact you directly on Telegram shortly.")
     return ConversationHandler.END
-
 
 async def request_details_start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
-    # Acknowledge the callback to prevent timeout
     await query.answer(cache_time=0)
     context.user_data['service_choice'] = query.data
     await query.edit_message_text(text="Of course. Let's get a few details.\n\nFirst, what is your full name?")
     return AWAITING_NAME
-
 
 async def get_name(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data['name'] = update.message.text
     await update.message.reply_text("Thanks! What is your phone number? (Include country code)")
     return AWAITING_PHONE
 
-
 async def get_phone(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data['phone'] = update.message.text
     await update.message.reply_text("Perfect. And what subject do you need help with?")
     return AWAITING_SUBJECT
-
 
 async def finalise_request(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     context.user_data['subject'] = update.message.text
@@ -205,20 +176,15 @@ async def finalise_request(update: Update, context: ContextTypes.DEFAULT_TYPE) -
         f"*User ID:* `{user.id}`"
     )
     await context.bot.send_message(chat_id=ADMIN_CHAT_ID, text=admin_message, parse_mode='Markdown')
-    await update.message.reply_text("✅ All set! We've sent your request. A tutor will be in touch shortly.",
-                                    reply_markup=ReplyKeyboardRemove())
+    await update.message.reply_text("✅ All set! We've sent your request. A tutor will be in touch shortly.", reply_markup=ReplyKeyboardRemove())
     return ConversationHandler.END
-
 
 async def show_price_info(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     query = update.callback_query
-    # Acknowledge the callback to prevent timeout
     await query.answer(cache_time=0)
     country_info = context.user_data['country']
     currency_code = country_info['currency']
-    price1, price2, price3 = get_rounded_price(40, currency_code), get_rounded_price(35,
-                                                                                     currency_code), get_rounded_price(
-        30, currency_code)
+    price1, price2, price3 = get_rounded_price(40, currency_code), get_rounded_price(35, currency_code), get_rounded_price(30, currency_code)
     if price1 is None:
         await query.edit_message_text("Sorry, pricing information for your region is currently unavailable.")
         return SELECTING_SERVICE
@@ -233,23 +199,20 @@ async def show_price_info(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     await query.edit_message_text(text=price_text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
     return SELECTING_TUTOR_OPTION
 
-
 async def cancel(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     user = update.effective_user
     logger.info(f"User {user.id} cancelled the conversation.")
-    await update.message.reply_text("Operation cancelled. Type /start to begin again.",
-                                    reply_markup=ReplyKeyboardRemove())
+    await update.message.reply_text("Operation cancelled. Type /start to begin again.", reply_markup=ReplyKeyboardRemove())
     context.user_data.clear()
     return ConversationHandler.END
-
 
 # --- Application Setup ---
 if not BOT_TOKEN:
     logger.fatal("FATAL: TELEGRAM_BOT_TOKEN environment variable not set!")
     sys.exit(1)
 
+# Build the application and add handlers
 ptb_app = Application.builder().token(BOT_TOKEN).build()
-
 conv_handler = ConversationHandler(
     entry_points=[CommandHandler('start', start)],
     states={
@@ -278,38 +241,25 @@ ptb_app.add_handler(conv_handler)
 # --- Webhook Setup (for Deployment) ---
 app = Flask(__name__)
 
-
-# The `startup` function will be called by the build command on Render.
-async def startup():
-    """Initialize the bot application and set the webhook."""
-    logger.info("Initializing application and setting webhook...")
+async def main_setup():
+    """Initializes the bot application and sets the webhook. This runs once per worker."""
+    logger.info("Initializing application for the server process...")
     await ptb_app.initialize()
     if WEBHOOK_URL:
         await ptb_app.bot.set_webhook(url=f"{WEBHOOK_URL}/{BOT_TOKEN}", allowed_updates=Update.ALL_TYPES)
         logger.info(f"Webhook set to {WEBHOOK_URL}/{BOT_TOKEN}")
-    else:
-        logger.info("WEBHOOK_URL not set, skipping webhook setup.")
-
+    await ptb_app.start()
+    logger.info("Application started and ready for updates.")
 
 @app.route("/")
 def index():
     return "Bot is running!"
 
-
 @app.route(f"/{BOT_TOKEN}", methods=["POST"])
 async def webhook():
-    global ptb_initialized
+    """This function receives and processes updates directly."""
     logger.info("--- Webhook received an update ---")
     try:
-        if not ptb_initialized:
-            logger.info("Initializing app (first request)...")
-            await ptb_app.initialize()
-            await ptb_app.start()
-            ptb_initialized = True
-            # 🛑 Don't process the first update — app just started!
-            logger.info("App initialized. Ignoring first update to prevent event loop error.")
-            return "OK"
-
         update_data = request.get_json(force=True)
         update = Update.de_json(update_data, ptb_app.bot)
         await ptb_app.process_update(update)
@@ -318,16 +268,12 @@ async def webhook():
         logger.error(f"Error processing update: {e}")
     return "OK"
 
-
-
 # --- Main Execution Block ---
 if __name__ == "__main__":
-    if len(sys.argv) > 1 and sys.argv[1] == 'setup_webhook':
-        # This is called by Render's build command
-        logger.info("Running startup and webhook setup...")
-        asyncio.run(startup())
-    else:
-        # This block is for local testing only
-        print("Bot is running locally in polling mode...")
-        # The run_polling() method handles initialization automatically.
-        ptb_app.run_polling()
+    # This block is for local testing only
+    print("Bot is running locally in polling mode...")
+    ptb_app.run_polling()
+else:
+    # This block is for deployment on a server like Render
+    # It ensures the application is set up correctly when Gunicorn starts a worker.
+    asyncio.run(main_setup())

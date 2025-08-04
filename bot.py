@@ -297,21 +297,26 @@ def index():
 
 @app.route(f"/{BOT_TOKEN}", methods=["POST"])
 async def webhook():
-    """This function receives and processes updates directly."""
+    global ptb_initialized
     logger.info("--- Webhook received an update ---")
     try:
-        # This is the crucial fix: Initialize the application at the start of the request.
-        await ptb_app.initialize()
+        if not ptb_initialized:
+            logger.info("Initializing app (first request)...")
+            await ptb_app.initialize()
+            await ptb_app.start()
+            ptb_initialized = True
+            # 🛑 Don't process the first update — app just started!
+            logger.info("App initialized. Ignoring first update to prevent event loop error.")
+            return "OK"
 
         update_data = request.get_json(force=True)
         update = Update.de_json(update_data, ptb_app.bot)
-
         await ptb_app.process_update(update)
         logger.info("--- Update processed successfully ---")
     except Exception as e:
         logger.error(f"Error processing update: {e}")
-
     return "OK"
+
 
 
 # --- Main Execution Block ---

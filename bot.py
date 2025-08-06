@@ -1,4 +1,4 @@
-# MikroTechAcademy Bot - Final Version (Stable Initialization)
+# MikroTechAcademy Bot - Final Version (Production Ready)
 # File: bot.py
 
 import logging
@@ -60,12 +60,16 @@ def get_rounded_price(base_price_gbp: int, target_currency: str) -> int | None:
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> int:
     user = update.effective_user
     logger.info(f"User {user.id} ({user.first_name}) started the conversation.")
-    keyboard = [[InlineKeyboardButton(name, callback_data=f'country_{code}')]
-                for code, val in COUNTRIES.items() for name in [f"{val['name']}"]]
-
+    # Restored compact button layout
+    keyboard = [
+        [InlineKeyboardButton("🇬🇧 UK", callback_data='country_uk'), InlineKeyboardButton("🇰🇼 Kuwait", callback_data='country_kw')],
+        [InlineKeyboardButton("🇦🇪 UAE", callback_data='country_ae'), InlineKeyboardButton("🇸🇦 Saudi Arabia", callback_data='country_sa')],
+        [InlineKeyboardButton("🇶🇦 Qatar", callback_data='country_qa'), InlineKeyboardButton("🇺🇸 USA", callback_data='country_us')],
+        [InlineKeyboardButton("🇨🇦 Canada", callback_data='country_ca')],
+    ]
     reply_markup = InlineKeyboardMarkup(keyboard)
-    text = ("Welcome to MikroTechAcademy! 🤖\n\nPlease select the country where you are studying:  \n NOTE"
-            " some time you need to click TWICE ")
+    # Removed the "click twice" note
+    text = "Welcome to MikroTechAcademy! 🤖\n\nPlease select the country where you are studying:"
     if update.callback_query:
         await update.callback_query.answer(cache_time=0)
         await update.callback_query.edit_message_text(text, reply_markup=reply_markup)
@@ -272,6 +276,6 @@ if __name__ == "__main__":
     print("Bot is running locally in polling mode...")
     ptb_app.run_polling()
 else:
-    # This block is for deployment on a server like Render
+    # This block is for deployment on a server like DigitalOcean
     # It ensures the application is set up correctly when Gunicorn starts a worker.
     asyncio.run(main_setup())

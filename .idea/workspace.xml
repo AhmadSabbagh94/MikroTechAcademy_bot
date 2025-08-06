@@ -4,7 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e910b3e5-56ce-41e9-b75a-cd151c820431" name="Changes" comment="CLICK TWICE NOTE ADDED">
+    <list default="true" id="e910b3e5-56ce-41e9-b75a-cd151c820431" name="Changes" comment="CLICK TWICE NOTE ADDED-DESIGN UPDATED">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/bot.py" beforeDir="false" afterPath="$PROJECT_DIR$/bot.py" afterDir="false" />
     </list>
@@ -276,7 +276,15 @@
       <option name="project" value="LOCAL" />
       <updated>1754302589862</updated>
     </task>
-    <option name="localTasksCounter" value="25" />
+    <task id="LOCAL-00025" summary="CLICK TWICE NOTE ADDED-DESIGN UPDATED">
+      <option name="closed" value="true" />
+      <created>1754302961289</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1754302961289</updated>
+    </task>
+    <option name="localTasksCounter" value="26" />
     <servers />
   </component>
   <component name="VcsManagerConfiguration">
@@ -303,6 +311,7 @@
     <MESSAGE value="webhook update2" />
     <MESSAGE value="new trial" />
     <MESSAGE value="CLICK TWICE NOTE ADDED" />
-    <option name="LAST_COMMIT_MESSAGE" value="CLICK TWICE NOTE ADDED" />
+    <MESSAGE value="CLICK TWICE NOTE ADDED-DESIGN UPDATED" />
+    <option name="LAST_COMMIT_MESSAGE" value="CLICK TWICE NOTE ADDED-DESIGN UPDATED" />
   </component>
 </project>
